@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  apache:
+    build: ./docker
+    container_name: apache
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./config/vhost.conf:/etc/apache2/sites-enabled/000-default.conf
+    depends_on:
+      - mysql
+    networks:
+      - webasyst_network
+    environment:
+      - WAIT_HOSTS=mysql:3306
+
+  mysql:
+    platform: linux/amd64
+    image: mysql:5.7
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: webasyst
+      MYSQL_USER: webasyst
+      MYSQL_PASSWORD: secret
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - webasyst_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+volumes:
+  db_data:
+
+networks:
+  webasyst_network:
+    driver: bridge
