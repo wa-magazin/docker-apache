@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3'
 
 services:
   apache:
@@ -37,6 +37,20 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    depends_on:
+      - mysql
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - webasyst_network
 
 volumes:
   db_data:
