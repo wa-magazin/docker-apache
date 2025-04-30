@@ -37,7 +37,7 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
-    platform: linux/amd64
+    platform: ${DOCKER_DEFAULT_PLATFORM}
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -52,7 +52,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
     networks:
       - webasyst_network
-    platform: linux/amd64
+    platform: ${DOCKER_DEFAULT_PLATFORM}
 
 volumes:
   db_data:
