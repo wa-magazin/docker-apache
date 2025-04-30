@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   apache:
@@ -15,6 +15,7 @@ services:
       - webasyst_network
     environment:
       - WAIT_HOSTS=mariadb:3306
+    platform: ${DOCKER_DEFAULT_PLATFORM}  # или linux/arm64, если нужно строго под ARM
 
   mariadb:
     image: mariadb:10.6
@@ -28,7 +29,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - webasyst_network
     healthcheck:
@@ -36,6 +37,7 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
+    platform: linux/amd64
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -50,6 +52,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
     networks:
       - webasyst_network
+    platform: linux/amd64
 
 volumes:
   db_data:
