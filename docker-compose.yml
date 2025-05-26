@@ -1,21 +1,36 @@
 version: '3.8'
 
 services:
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81"   # Web UI
+      - "443:443"
+    volumes:
+      - ./data/npm:/data
+      - ./data/letsencrypt:/etc/letsencrypt
+    networks:
+      - webasyst_network
+
   apache:
     build: ./docker
     container_name: apache
-    ports:
-      - "8080:80"
     volumes:
       - ./src:/var/www/html
       - ./config/vhost.conf:/etc/apache2/sites-enabled/000-default.conf
     depends_on:
       - mariadb
-    networks:
-      - webasyst_network
     environment:
       - WAIT_HOSTS=mariadb:3306
-    platform: ${DOCKER_DEFAULT_PLATFORM}  # или linux/arm64, если нужно строго под ARM
+    networks:
+      - webasyst_network
+    labels:
+      - "traefik.enable=false"
+    expose:
+      - "80"  # не пробрасываем наружу — проксируем через NPM
 
   mariadb:
     image: mariadb:10.6
@@ -28,8 +43,6 @@ services:
       MARIADB_PASSWORD: secret
     volumes:
       - db_data:/var/lib/mysql
-    ports:
-      - "3307:3306"
     networks:
       - webasyst_network
     healthcheck:
@@ -37,7 +50,6 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
-    platform: ${DOCKER_DEFAULT_PLATFORM}
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -45,14 +57,13 @@ services:
     restart: always
     depends_on:
       - mariadb
-    ports:
-      - "8081:80"
     environment:
       PMA_HOST: mariadb
       MYSQL_ROOT_PASSWORD: root
     networks:
       - webasyst_network
-    platform: ${DOCKER_DEFAULT_PLATFORM}
+    expose:
+      - "80"  # тоже только через NPM
 
 volumes:
   db_data:
